@@ -348,7 +348,7 @@ bool connect(arduino_device &device) {
         device.last_error.print();
     }
 
-    cmd = command(device.read());
+    cmd = command(device.read(5000));
 
     if (cmd == command_code::invalid) {
         unique_lock<mutex> lk(clog_m);
@@ -419,8 +419,10 @@ void communicate(string path) {
         arduino_device device(path);
         usleep(1000 * 1000 * 2); // 2s (waiting for arduino to restart)
 
-        while (fail_count < 2 && !exit_now) {
+        while (fail_count < 4 && !exit_now) {
+            auto deadline = chrono::steady_clock::now() + chrono::milliseconds(5000);
             if (!connect(device)) {
+                usleep(1000 * chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
                 fail_count++;
                 continue;
             }

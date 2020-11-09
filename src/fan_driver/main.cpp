@@ -422,7 +422,9 @@ void communicate(string path) {
         while (fail_count < 4 && !exit_now) {
             auto deadline = chrono::steady_clock::now() + chrono::milliseconds(5000);
             if (!connect(device)) {
-                usleep(1000 * chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count());
+		int ms = chrono::duration_cast<chrono::milliseconds>(deadline - chrono::steady_clock::now()).count();
+                if (ms > 0)
+		    usleep(1000 * ms);
                 fail_count++;
                 continue;
             }
